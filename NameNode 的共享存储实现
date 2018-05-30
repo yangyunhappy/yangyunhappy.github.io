@@ -12,7 +12,7 @@
 一个典型的 NameNode 的元数据存储目录结构如图 3 所示 (图片来源于参考文献 [4])，这里主要关注其中的 EditLog 文件和 FSImage 文件：
 
 图 3 .NameNode 的元数据存储目录结构
-[!Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img003.png)
+![Image1](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img003.png)
 
 NameNode 在执行 HDFS 客户端提交的创建文件或者移动文件这样的写操作的时候，会首先把这些操作记录在 EditLog 文件之中，
 
