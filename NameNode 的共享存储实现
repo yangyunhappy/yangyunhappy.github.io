@@ -12,7 +12,7 @@
 一个典型的 NameNode 的元数据存储目录结构如图 3 所示 (图片来源于参考文献 [4])，这里主要关注其中的 EditLog 文件和 FSImage 文件：
 
 图 3 .NameNode 的元数据存储目录结构
-![Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img003.png)
+[Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img003.png)
 
 NameNode 在执行 HDFS 客户端提交的创建文件或者移动文件这样的写操作的时候，会首先把这些操作记录在 EditLog 文件之中，
 
@@ -39,7 +39,7 @@ NameNode 会定期对内存中的文件系统镜像进行 checkpoint 操作，�
 
 图 4 . 基于 QJM 的共享存储系统的内部实现架构图
  
-![Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img004.png)
+[Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img004.png)
 
 FSEditLog：这个类封装了对 EditLog 的所有操作，是 NameNode 对 EditLog 的所有操作的入口。
 
@@ -62,7 +62,7 @@ Active NameNode 和 StandbyNameNode 使用 JouranlNode 集群来进行数据同�
 
 图 5 . 基于 QJM 的共享存储的数据同步机制
 
-![Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img005.png)
+[Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img005.png)
 
 Active NameNode 提交 EditLog 到 JournalNode 集群
 
@@ -84,7 +84,7 @@ Standby NameNode 从 JournalNode 集群同步 EditLog
 补齐落后的 EditLog 的过程复用了前面描述的 Standby NameNode 从 JournalNode 集群同步 EditLog 的逻辑和代码，最终调用 EditLogTailer 类的 doTailEdits 方法来完成 EditLog 的补齐。使 JournalNode 集群上的 EditLog 达成一致的过程是一致性算法 Paxos 的典型应用场景，QJM 对这部分的处理可以看做是 Single Instance Paxos(参见参考文献 [3]) 算法的一个实现，在达成一致的过程中，Active NameNode 和 JournalNode 集群之间的交互流程如图 6 所示，具体描述如下：
 
 图 6.Active NameNode 和 JournalNode 集群的交互流程图
-![Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img006.png)
+[Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img006.png)
 
 生成一个新的 Epoch
 
