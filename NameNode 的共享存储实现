@@ -10,8 +10,8 @@
 
 ##NameNode 的元数据存储概述
 一个典型的 NameNode 的元数据存储目录结构如图 3 所示 (图片来源于参考文献 [4])，这里主要关注其中的 EditLog 文件和 FSImage 文件：
-NameNode 的元数据存储目录结构
-![Image1](https://github.com/yangyunhappy/yangyunhappy.github.io/blob/master/hadoop.md/)
+图3.NameNode 的元数据存储目录结构
+
 
 NameNode 在执行 HDFS 客户端提交的创建文件或者移动文件这样的写操作的时候，会首先把这些操作记录在 EditLog 文件之中，
 
@@ -38,7 +38,6 @@ NameNode 会定期对内存中的文件系统镜像进行 checkpoint 操作，�
 
 图 4 . 基于 QJM 的共享存储系统的内部实现架构图
  
-[Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img004.png)
 
 FSEditLog：这个类封装了对 EditLog 的所有操作，是 NameNode 对 EditLog 的所有操作的入口。
 
@@ -61,7 +60,7 @@ Active NameNode 和 StandbyNameNode 使用 JouranlNode 集群来进行数据同�
 
 图 5 . 基于 QJM 的共享存储的数据同步机制
 
-[Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img005.png)
+
 
 Active NameNode 提交 EditLog 到 JournalNode 集群
 
@@ -83,7 +82,7 @@ Standby NameNode 从 JournalNode 集群同步 EditLog
 补齐落后的 EditLog 的过程复用了前面描述的 Standby NameNode 从 JournalNode 集群同步 EditLog 的逻辑和代码，最终调用 EditLogTailer 类的 doTailEdits 方法来完成 EditLog 的补齐。使 JournalNode 集群上的 EditLog 达成一致的过程是一致性算法 Paxos 的典型应用场景，QJM 对这部分的处理可以看做是 Single Instance Paxos(参见参考文献 [3]) 算法的一个实现，在达成一致的过程中，Active NameNode 和 JournalNode 集群之间的交互流程如图 6 所示，具体描述如下：
 
 图 6.Active NameNode 和 JournalNode 集群的交互流程图
-[Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img006.png)
+
 
 生成一个新的 Epoch
 
@@ -126,7 +125,7 @@ NameNode 接下来向 JournalNode 集群发送 prepareRecovery RPC 请求，请�
 假设有 3 个 JournalNode：JN1、JN2 和 JN3，Active NameNode 发送了事务 id 为 151、152 和 153 的 3 个事务到 JournalNode 集群，这 3 个事务成功地写入了 JN2，但是在还没能写入 JN1 和 JN3 之前，Active NameNode 就宕机了。同时，JN3 在整个写入的过程中延迟较大，落后于 JN1 和 JN2。最终成功写入 JN1 的事务 id 为 150，成功写入 JN2 的事务 id 为 153，而写入到 JN3 的事务 id 仅为 125，如图 7 所示 (图片来源于参考文献 [2])。按照前面描述的只有成功地写入了大多数的 JournalNode 才认为写入成功的原则，显然事务 id 为 151、152 和 153 的这 3 个事务只能算作写入失败。在进行数据恢复的过程中，会发生下面两种情况：
 
 图 7.JournalNode 集群写入的事务 id 情况
-![Image](https://www.ibm.com/developerworks/cn/opensource/os-cn-hadoop-name-node/img007.png)
+
 如果随后的 Active NameNode 进行数据恢复时在 prepareRecovery 阶段收到了 JN2 的回复，那么肯定会以 JN2 对应的 EditLog Segment 为基准来进行数据恢复，这样最后在多数 JournalNode 上的 EditLog Segment 会恢复到事务 153。从恢复的结果来看，实际上可以认为前面宕机的 Active NameNode 对事务 id 为 151、152 和 153 的这 3 个事务的写入成功了。但是如果从 NameNode 自身的角度来看，这显然就发生了数据不一致的情况。
 如果随后的 Active NameNode 进行数据恢复时在 prepareRecovery 阶段没有收到 JN2 的回复，那么肯定会以 JN1 对应的 EditLog Segment 为基准来进行数据恢复，这样最后在多数 JournalNode 上的 EditLog Segment 会恢复到事务 150。在这种情况下，如果从 NameNode 自身的角度来看的话，数据就是一致的了。
 事实上不光本文描述的基于 QJM 的共享存储方案无法保证数据的绝对一致，大家通常认为的一致性程度非常高的 Zookeeper 也会发生类似的情况，这也从侧面说明了要实现一个数据绝对一致的分布式存储系统的确非常困难。
